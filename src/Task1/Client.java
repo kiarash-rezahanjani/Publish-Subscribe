@@ -1,69 +1,93 @@
 package Task1;
 
-import src.*;
-
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
-import java.util.Vector;
-
+import ports.NodePort;
 import Events.InitEvent;
+import Events.JoinRequest;
+import Events.JoinResponse;
+import Events.LatestPostResponse;
+import Events.NewPost;
+import Events.NewTopic;
+import Events.RegisterRequest;
+import Events.RegisterResponse;
 
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
-import se.sics.kompics.address.Address;
-import se.sics.kompics.network.Network;
-import se.sics.kompics.p2p.bootstrap.P2pBootstrap;
-import se.sics.kompics.p2p.bootstrap.client.BootstrapClient;
-import se.sics.kompics.p2p.bootstrap.client.BootstrapClientInit;
-import se.sics.kompics.p2p.fd.FailureDetector;
-import se.sics.kompics.p2p.fd.ping.PingFailureDetector;
-import se.sics.kompics.p2p.fd.ping.PingFailureDetectorInit;
-import se.sics.kompics.timer.Timer;
+import se.sics.kompics.Positive;
+import se.sics.kompics.Start;
 
 public class Client extends ComponentDefinition
 {
- 
-	int rand;
+
+	Positive<NodePort> clientPort = requires(NodePort.class);
+	int myRegistrationNumber;
 	
 	public Client() 
 	{
-		//fdRequests = new HashMap<Address, UUID>();
-		//fdPeers = new HashMap<Address, PeerAddress>();
-		//bootstrap = create(BootstrapClient.class);
-		rand = new Random(System.currentTimeMillis());
-
-		fd = create(PingFailureDetector.class);
 		
-		
-		connect(network, fd.getNegative(Network.class));
-		connect(network, bootstrap.getNegative(Network.class));
-		connect(timer, fd.getNegative(Timer.class));
-		connect(timer, bootstrap.getNegative(Timer.class));
-		
-		subscribe(handleInit, control);
-		subscribe(handleJoinResponse, msPeerPort);
-		subscribe(handleLatestPostReponse, timer);
-		subscribe(handleNewPost, fd.getPositive(FailureDetector.class));
-		subscribe(handle, network);
+		// connect channels and then define subscription for handlers.
 		
 	
+		subscribe(handleInit, control);
+		subscribe(handleJoinResponse,clientPort);
+		subscribe(handleNewTopic,clientPort);
+		subscribe(handleNewPost,clientPort );
+		subscribe(handleLatestPostsResponse,clientPort );
+		subscribe(handleRegisterResponse,clientPort );
 	}
 	
-	Handler<InitEvent> handleInit = new Handler<InitEvent>() {
-		public void handle(InitEvent init) {
+	//-------------------------------------------------------------------
+	// This handler initiates the Peer component.	
+	//-------------------------------------------------------------------
+		Handler<Start> handleInit = new Handler<Start>() {
+			public void handle(Start init) 
+			{
+				System.out.println("Client started..");
+				trigger(new RegisterRequest(), clientPort);
 			
-			/*
-			peerSelf = init.getMSPeerSelf();
-			self = peerSelf.getPeerAddress();
-			friends = new Vector<PeerAddress>();
-			msgPeriod = init.getMSConfiguration().getSnapshotPeriod();
+				
+				
+			}
+		};
+		
+		Handler<JoinResponse> handleJoinResponse = new Handler<JoinResponse>() {
+			public void handle(JoinResponse event) 
+			{
+				System.out.println("Client No: "+myRegistrationNumber+ " Rec Message From Server..");
+			}
+		};
+		
+		Handler<NewTopic> handleNewTopic = new Handler<NewTopic>() {
+			public void handle(NewTopic event) 
+			{
 
-			viewSize = init.getMSConfiguration().getViewSize();
+			}
+		};
+		
+		Handler<NewPost> handleNewPost = new Handler<NewPost>() {
+			public void handle(NewPost event) 
+			{
 
-			trigger(new BootstrapClientInit(self, init.getBootstrapConfiguration()), bootstrap.getControl());
-			trigger(new PingFailureDetectorInit(self, init.getFdConfiguration()), fd.getControl());
-		*/
-		}
-	};
+			}
+		};
+		
+		Handler<LatestPostResponse> handleLatestPostsResponse = new Handler<LatestPostResponse>() {
+			public void handle(LatestPostResponse event) 
+			{
+
+			}
+		};
+		
+		Handler<RegisterResponse> handleRegisterResponse = new Handler<RegisterResponse>() {
+			public void handle(RegisterResponse event) 
+			{
+				myRegistrationNumber = event.getRegistrationNumber();
+			}
+		};
+		
+	/*	Handler<PeerFailureSuspicion> handleClientFailureSuspicion = new Handler<PeerFailureSuspicion>() {
+			public void handle(PeerFailureSuspicion event) 
+			{
+
+			}
+		}; */
 }

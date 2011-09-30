@@ -1,10 +1,10 @@
 package Task1;
 import Events.*;
-
-import id2210.system.peer.PeerAddress;
+import server.*;
 
 import java.util.Random;
 import java.util.Vector;
+import ports.*;
 
 import se.sics.kompics.*;
 import se.sics.kompics.address.Address;
@@ -17,37 +17,25 @@ import se.sics.kompics.p2p.fd.PeerFailureSuspicion;
 import se.sics.kompics.p2p.fd.ping.PingFailureDetector;
 import se.sics.kompics.p2p.fd.ping.PingFailureDetectorInit;
 import se.sics.kompics.timer.Timer;
-import src.*;
 
 public class Server extends ComponentDefinition
 {
-
-	Address myAddress;
-	PeerAddress myPeerAdress;
-	Component fd;
-	Random rand;
+	Negative<NodePort> serverPort = provides(NodePort.class);
+	RegisterClient registration =new RegisterClient();
 	
 	public Server() 
 	{
-		//fdRequests = new HashMap<Address, UUID>();
-		//fdPeers = new HashMap<Address, PeerAddress>();
-		//server=Configuration.server;
-		//bootStrapServer= create(BootstrapServer.class);
+			
+		//connect(network, fd.getNegative(Network.class));
 		
-		fd = create(PingFailureDetector.class);
-		rand = new Random(System.currentTimeMillis());
-		
-		connect(network, fd.getNegative(Network.class));
-		connect(network, bootstrap.getNegative(Network.class));
-		connect(timer, fd.getNegative(Timer.class));
-		connect(timer, bootstrap.getNegative(Timer.class));
 		
 		subscribe(handleInit, control);
-		subscribe(handleJoinRequest, );
-		subscribe(handleCreateTopic, );
-		subscribe(handleCreatePost, );
-		subscribe(handleLatestPostsRequest, );
-		subscribe(handleClientFailureSuspicion, fd.getPositive(FailureDetector.class));
+		subscribe(handleJoinRequest,serverPort);
+		subscribe(handleCreateTopic,serverPort);
+		subscribe(handleCreatePost,serverPort );
+		subscribe(handleLatestPostsRequest,serverPort );
+		subscribe(handleRegisterRequest,serverPort );
+	//	subscribe(handleClientFailureSuspicion, fd.getPositive(FailureDetector.class));
 		
 
 	}
@@ -56,26 +44,18 @@ public class Server extends ComponentDefinition
 	//-------------------------------------------------------------------
 	// This handler initiates the Peer component.	
 	//-------------------------------------------------------------------
-		Handler<InitEvent> handleInit = new Handler<InitEvent>() {
-			public void handle(InitEvent init) {
-				/*
-				peerSelf = init.getMSPeerSelf();
-				self = peerSelf.getPeerAddress();
-				friends = new Vector<PeerAddress>();
-				msgPeriod = init.getMSConfiguration().getSnapshotPeriod();
-
-				viewSize = init.getMSConfiguration().getViewSize();
-
-				trigger(new BootstrapClientInit(self, init.getBootstrapConfiguration()), bootstrap.getControl());
-				trigger(new PingFailureDetectorInit(self, init.getFdConfiguration()), fd.getControl());
-			*/
+		Handler<Start> handleInit = new Handler<Start>() {
+			public void handle(Start init) 
+			{
+				System.out.println("Server started..");
 			}
 		};
 		
 		Handler<JoinRequest> handleJoinRequest = new Handler<JoinRequest>() {
 			public void handle(JoinRequest event) 
 			{
-
+				System.out.println("Server rec message from client.."+ event.getMessage());
+				trigger(new JoinResponse(event), serverPort);
 			}
 		};
 		
@@ -100,10 +80,19 @@ public class Server extends ComponentDefinition
 			}
 		};
 		
-		Handler<PeerFailureSuspicion> handleClientFailureSuspicion = new Handler<PeerFailureSuspicion>() {
+		Handler<RegisterRequest> handleRegisterRequest = new Handler<RegisterRequest>() {
+			public void handle(RegisterRequest event) 
+			{
+				RegisterResponse response= new RegisterResponse(event);
+				response.setRegistrationNumber(registration.getClientID());
+				trigger(response, serverPort);
+			}
+		};
+		
+	/*	Handler<PeerFailureSuspicion> handleClientFailureSuspicion = new Handler<PeerFailureSuspicion>() {
 			public void handle(PeerFailureSuspicion event) 
 			{
 
 			}
-		};
+		}; */
 }

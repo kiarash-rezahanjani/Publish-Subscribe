@@ -2,7 +2,7 @@ package Events;
 import se.sics.kompics.*;
 
 
-public class JoinResponse extends Response 
+public class JoinResponse extends Response
 {
 	String message;
 	

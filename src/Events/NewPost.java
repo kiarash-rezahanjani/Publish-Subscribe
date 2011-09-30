@@ -1,5 +1,7 @@
 package Events;
 
-public class NewPost {
+import se.sics.kompics.Event;
+
+public class NewPost extends Event {
 
 }

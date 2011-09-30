@@ -1,5 +1,7 @@
 package Events;
 
-public class NewTopic {
+import se.sics.kompics.Event;
+
+public class NewTopic extends Event{
 
 }
