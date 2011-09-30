@@ -1,5 +1,8 @@
 package Events;
 
-public class CreateTopic {
+import se.sics.kompics.Request;
+
+public class CreateTopic extends Request
+{
 
 }

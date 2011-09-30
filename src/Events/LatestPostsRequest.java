@@ -1,5 +1,8 @@
 package Events;
 
-public class LatestPostsRequest {
+import se.sics.kompics.Request;
+
+public class LatestPostsRequest extends Request
+{
 
 }

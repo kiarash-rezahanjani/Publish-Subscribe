@@ -24,15 +24,17 @@ import se.sics.kompics.timer.Timer;
 public class Client extends ComponentDefinition
 {
  
+	int rand;
+	
 	public Client() 
 	{
 		//fdRequests = new HashMap<Address, UUID>();
 		//fdPeers = new HashMap<Address, PeerAddress>();
-		server=Configuration.server;
+		//bootstrap = create(BootstrapClient.class);
 		rand = new Random(System.currentTimeMillis());
 
 		fd = create(PingFailureDetector.class);
-		bootstrap = create(BootstrapClient.class);
+		
 		
 		connect(network, fd.getNegative(Network.class));
 		connect(network, bootstrap.getNegative(Network.class));
@@ -50,6 +52,7 @@ public class Client extends ComponentDefinition
 	
 	Handler<InitEvent> handleInit = new Handler<InitEvent>() {
 		public void handle(InitEvent init) {
+			
 			/*
 			peerSelf = init.getMSPeerSelf();
 			self = peerSelf.getPeerAddress();

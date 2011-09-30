@@ -1,5 +1,8 @@
 package Events;
 
-public class CreatePost {
+import se.sics.kompics.Request;
+
+public class CreatePost extends Request
+{
 
 }

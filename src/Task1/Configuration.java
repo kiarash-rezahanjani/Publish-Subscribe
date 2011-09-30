@@ -30,12 +30,12 @@ public class Configuration {
 	int webPort = 8080;
 	int bootId = Integer.MAX_VALUE;
 
-//	Address bootServerAddress = new Address(ip, networkPort, bootId);
+	Address bootServerAddress = new Address(ip, networkPort, bootId);
 	Address server = new Address(ip, networkPort, 0);
 
-//	BootstrapConfiguration bootConfiguration = new BootstrapConfiguration(bootServerAddress, 60000, 4000, 3, 30000, webPort, webPort);
+	BootstrapConfiguration bootConfiguration = new BootstrapConfiguration(bootServerAddress, 60000, 4000, 3, 30000, webPort, webPort);
 	PingFailureDetectorConfiguration fdConfiguration = new PingFailureDetectorConfiguration(10000, 50000, 5000, 1000, Transport.TCP);
-//	NetworkConfiguration networkConfiguration = new NetworkConfiguration(ip, networkPort, 0);
+	NetworkConfiguration networkConfiguration = new NetworkConfiguration(ip, networkPort, 0);
 //	PeerConfiguration peerConfiguration = new PeerConfiguration(3, 10000);
 
 //-------------------------------------------------------------------	
@@ -44,7 +44,7 @@ public class Configuration {
 		String c = File.createTempFile("ping.fd.", ".conf").getAbsolutePath();
 		fdConfiguration.store(c);
 		System.setProperty("ping.fd.configuration", c);
-/*		
+		
 		c = File.createTempFile("bootstrap.", ".conf").getAbsolutePath();
 		bootConfiguration.store(c);
 		System.setProperty("bootstrap.configuration", c);	
@@ -52,7 +52,7 @@ public class Configuration {
 		c = File.createTempFile("network.", ".conf").getAbsolutePath();
 		networkConfiguration.store(c);
 		System.setProperty("network.configuration", c);
-
+		/*
 		c = File.createTempFile("ms.", ".conf").getAbsolutePath();
 		peerConfiguration.store(c);
 		System.setProperty("ms.configuration", c);
