@@ -5,6 +5,7 @@ import Events.InitEvent;
 import Events.JoinRequest;
 import Events.JoinResponse;
 import Events.LatestPostResponse;
+import Events.LatestPostsRequest;
 import Events.NewPost;
 import Events.NewTopic;
 import Events.RegisterRequest;
@@ -14,19 +15,19 @@ import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
 import se.sics.kompics.Start;
+import util.Post;
 
+import java.util.*;
 public class Client extends ComponentDefinition
 {
 
 	Positive<NodePort> clientPort = requires(NodePort.class);
+	HashMap<Object, Integer> subscriptionStatus = new HashMap<Object , Integer>(); 
 	int myRegistrationNumber;
 	
 	public Client() 
-	{
-		
+	{		
 		// connect channels and then define subscription for handlers.
-		
-	
 		subscribe(handleInit, control);
 		subscribe(handleJoinResponse,clientPort);
 		subscribe(handleNewTopic,clientPort);
@@ -43,8 +44,6 @@ public class Client extends ComponentDefinition
 			{
 				System.out.println("Client started..");
 				trigger(new RegisterRequest(), clientPort);
-			
-				
 				
 			}
 		};
@@ -52,28 +51,40 @@ public class Client extends ComponentDefinition
 		Handler<JoinResponse> handleJoinResponse = new Handler<JoinResponse>() {
 			public void handle(JoinResponse event) 
 			{
-				System.out.println("Client No: "+myRegistrationNumber+ " Rec Message From Server..");
+				System.out.println("Client No: " + myRegistrationNumber + " Rec JoinResponse From Server..");
+				
+				if(subscriptionStatus.size()>0)
+				{
+					trigger( new LatestPostsRequest(subscriptionStatus), clientPort );
+				}
 			}
 		};
 		
 		Handler<NewTopic> handleNewTopic = new Handler<NewTopic>() {
 			public void handle(NewTopic event) 
 			{
-
+				
 			}
 		};
 		
 		Handler<NewPost> handleNewPost = new Handler<NewPost>() {
 			public void handle(NewPost event) 
 			{
-
+				System.out.println("NewPost C-ID "+ myRegistrationNumber + " Title:" + event.getPost().getTitle() + "SeqNo " + event.getPost().getSeqNo());
 			}
 		};
 		
 		Handler<LatestPostResponse> handleLatestPostsResponse = new Handler<LatestPostResponse>() {
 			public void handle(LatestPostResponse event) 
 			{
-
+				List<Post> posts = event.getPostList();
+				
+				for(Post post: posts)
+				{
+					System.out.println("ID "+ myRegistrationNumber + " Post " +  post.getSeqNo());
+				}
+				
+				posts.get(posts.size()-1).getSeqNo();
 			}
 		};
 		

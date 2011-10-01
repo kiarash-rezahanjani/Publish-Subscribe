@@ -2,8 +2,13 @@ package Task1;
 import Events.*;
 import server.*;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Vector;
+
+import org.apache.commons.math.util.OpenIntToDoubleHashMap.Iterator;
+
 import ports.*;
 
 import se.sics.kompics.*;
@@ -17,11 +22,14 @@ import se.sics.kompics.p2p.fd.PeerFailureSuspicion;
 import se.sics.kompics.p2p.fd.ping.PingFailureDetector;
 import se.sics.kompics.p2p.fd.ping.PingFailureDetectorInit;
 import se.sics.kompics.timer.Timer;
+import util.Post;
+import util.Topic;
 
 public class Server extends ComponentDefinition
 {
 	Negative<NodePort> serverPort = provides(NodePort.class);
 	RegisterClient registration =new RegisterClient();
+	HashMap<Object, TopicManager> topicList = new HashMap<Object, TopicManager>();;
 	
 	public Server() 
 	{
@@ -62,20 +70,44 @@ public class Server extends ComponentDefinition
 		Handler<CreateTopic> handleCreateTopic = new Handler<CreateTopic>() {
 			public void handle(CreateTopic event) 
 			{
-
+				Object titleHash = ConsistentHashing.hashCode(event.getTopic().getTitle());
+				TopicManager topicManager = new TopicManager(event.getTopic().getTitle() , titleHash);
+				topicList.put(titleHash, topicManager);
 			}
 		};
 		
 		Handler<CreatePost> handleCreatePost = new Handler<CreatePost>() {
 			public void handle(CreatePost event) 
 			{
-
+				Object hashedTitle = ConsistentHashing.hashCode( event.getPost().getTitle() );
+				TopicManager tm = topicList.get(hashedTitle);
+				tm.addPost(event.getPost());
+				sendNewPostToSubsribers(tm, event.getPost());
 			}
+
+
 		};
 		
 		Handler<LatestPostsRequest> handleLatestPostsRequest = new Handler<LatestPostsRequest>() {
 			public void handle(LatestPostsRequest event) 
 			{
+				HashMap<Object, Integer> subStatus = event.getSubscriptionStatus();
+				Iterator it = (Iterator) subStatus.entrySet().iterator();
+				//for(int i=0 ; i< subStatus.size(); i++)
+				while(it.hasNext())
+				{
+					if(!topicList.containsKey(it.key()))
+						continue;
+					
+					TopicManager tm = topicList.get(it.key());
+					
+					if(tm.getLatestPostSeqNo() <= (int)it.value())
+						continue;
+					
+					trigger(new LatestPostResponse(event, tm.getAllPostFrom( (int) it.value())), serverPort);
+					
+				}
+				
 
 			}
 		};
@@ -95,4 +127,10 @@ public class Server extends ComponentDefinition
 
 			}
 		}; */
+		
+		private void sendNewPostToSubsribers(TopicManager tm, Post post) 
+		{
+			
+			
+		}
 }
