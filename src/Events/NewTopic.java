@@ -1,4 +1,4 @@
-package Events;
+package events;
 
 import se.sics.kompics.Event;
 import util.Topic;

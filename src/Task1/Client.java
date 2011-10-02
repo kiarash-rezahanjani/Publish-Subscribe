@@ -1,23 +1,19 @@
 package Task1;
 
 import ports.NodePort;
-import Events.InitEvent;
-import Events.JoinRequest;
-import Events.JoinResponse;
-import Events.LatestPostResponse;
-import Events.LatestPostsRequest;
-import Events.NewPost;
-import Events.NewTopic;
-import Events.RegisterRequest;
-import Events.RegisterResponse;
 
+import java.util.*;
+
+import events.*;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
 import se.sics.kompics.Start;
 import util.Post;
+import util.Topic;
 
-import java.util.*;
+
+
 public class Client extends ComponentDefinition
 {
 
@@ -52,17 +48,16 @@ public class Client extends ComponentDefinition
 			public void handle(JoinResponse event) 
 			{
 				System.out.println("Client No: " + myRegistrationNumber + " Rec JoinResponse From Server..");
-				
-				if(subscriptionStatus.size()>0)
-				{
-					trigger( new LatestPostsRequest(subscriptionStatus), clientPort );
-				}
+
+				requestLatestPosts();
+
 			}
 		};
 		
 		Handler<NewTopic> handleNewTopic = new Handler<NewTopic>() {
 			public void handle(NewTopic event) 
 			{
+				System.out.println("NewTopic Rec by: " + myRegistrationNumber + " Topic: " +event.getTopic().getTitle());
 				
 			}
 		};
@@ -92,7 +87,11 @@ public class Client extends ComponentDefinition
 			public void handle(RegisterResponse event) 
 			{
 				myRegistrationNumber = event.getRegistrationNumber();
-			}
+				
+				//For Testing only 
+				trigger(new JoinRequest(), clientPort);
+				
+			} 
 		};
 		
 	/*	Handler<PeerFailureSuspicion> handleClientFailureSuspicion = new Handler<PeerFailureSuspicion>() {
@@ -101,4 +100,33 @@ public class Client extends ComponentDefinition
 
 			}
 		}; */
+		public void requestLatestPosts()
+		{
+			if(subscriptionStatus.size()>0)
+			{
+				trigger( new LatestPostsRequest(subscriptionStatus), clientPort );
+				System.out.println("LatestPost Req From:" + myRegistrationNumber );
+			}
+		}
+		
+		public void subscribeTo(Topic topic)
+		{
+			trigger(new SubscriptionRequest(topic), clientPort);
+		}
+		
+		public void unSubscribeFrom(Topic topic)
+		{
+			trigger(new UnsubscribeRequest(topic), clientPort);
+		}
+		
+		public void createTopic(Topic topic)
+		{
+			
+			trigger(new CreateTopic(topic), clientPort);
+		}
+		
+		public void createPost(Post post)
+		{
+			trigger(new CreatePost(post), clientPort);
+		}
 }

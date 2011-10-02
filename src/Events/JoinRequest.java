@@ -1,4 +1,4 @@
-package Events;
+package events;
 import se.sics.kompics.*;
 
 public class JoinRequest extends Request

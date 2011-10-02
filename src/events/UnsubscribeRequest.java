@@ -3,24 +3,21 @@ package events;
 import se.sics.kompics.Request;
 import util.Topic;
 
-public class CreateTopic extends Request
+public class UnsubscribeRequest extends Request 
 {
-
 	Topic topic;
 
-	public CreateTopic(Topic topic) 
-	{	
+	public UnsubscribeRequest(Topic topic) {
 		this.topic = topic;
 	}
 
-	public Topic getTopic() 
-	{
+	public Topic getTopic() {
 		return topic;
 	}
 
-	public void setTopic(Topic topic) 
-	{
+	public void setTopic(Topic topic) {
 		this.topic = topic;
 	}
 	
+
 }
